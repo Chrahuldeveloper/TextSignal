@@ -1,0 +1,46 @@
+from sentence_transformers import SentenceTransformer
+import numpy as np
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+origins = [
+    "http://localhost:3000"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,            
+    allow_credentials=True,           
+    allow_methods=["*"],             
+    allow_headers=["*"],
+)
+
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+weights = np.load("weights.npy")
+bias = np.load("bias.npy")[0]
+
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+@app.post("/get-signal")
+def get_result(text:str):
+    try:
+        embedding = model.encode([text])[0]
+        z = embedding @ weights + bias
+        probability = sigmoid(z)
+        print("Probability:", probability)
+        if probability >= 0.5:
+            return {
+                "probability" : probability,
+                "useful" : True
+            }
+        else:
+            return {
+                "probability" : probability,
+                "useful" : False
+            }
+    except Exception as e:
+        print(e)        
