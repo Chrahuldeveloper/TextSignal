@@ -25,12 +25,17 @@ bias = np.load("bias.npy")[0]
 def sigmoid(z):
     return 1 / (1 + np.exp(-z))
 
-@app.post("/get-signal")
+
+def softmax(z):
+    exp_scores = np.exp(z)
+    return exp_scores / np.sum(exp_scores,axis=1,keepDim=True)
+
+@app.post("/check-text")
 def get_result(text:str):
     try:
         embedding = model.encode([text])[0]
         z = embedding @ weights + bias
-        probability = sigmoid(z)
+        probability = softmax(z)
         print("Probability:", probability)
         if probability >= 0.5:
             return {

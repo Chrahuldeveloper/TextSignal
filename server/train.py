@@ -15,9 +15,6 @@ X  = model.encode(
 Y = df["label"].to_numpy()
 
 
-print(X.shape)
-print(Y.shape)
-
 weights = np.zeros(X.shape[1])
 bias = 0.0
 
@@ -42,4 +39,37 @@ np.save("bias.npy", np.array([bias]))
 
 print("done")
 
+
+# text classification
+
+df  = pd.read_csv("./data1.csv")
+
+X = model.encode(df["text"].to_list(),show_progress_bar=True)
+Y = df["label"].to_numpy()
+weights = np.zeros((384,3))
+bias = np.zeros(3)
+lr  = 0.01
+epochs = 1500
+
+
+def softmax(z):
+    expo_scores = np.exp(z)
+    return expo_scores / np.sum(expo_scores,axis=1,keepdims=True)
+
+for epoch in range(epochs):
+    z = X @ weights + bias
+    predictions = softmax(z)
+    error = predictions.copy()
+    error[np.arange(len(Y)), Y] -= 1
+
+    dw = (X.T @ error) / len(Y)
+    db = np.mean(error, axis=0)
+
+    weights -= lr * dw
+    bias -= lr * db
+
+np.save("weights1.npy", weights)
+np.save("bias1.npy", np.array([bias]))
+
+print("done")
 

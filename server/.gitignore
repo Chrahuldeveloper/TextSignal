@@ -51,3 +51,6 @@ Thumbs.db
 
 /bias.npy
 /weights.npy
+
+/bias1.npy
+/weights1.npy
