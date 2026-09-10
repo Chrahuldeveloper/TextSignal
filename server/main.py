@@ -35,7 +35,7 @@ def get_result(text:str):
     try:
         embedding = model.encode([text])[0]
         z = embedding @ weights + bias
-        probability = softmax(z)
+        probability = sigmoid(z)
         print("Probability:", probability)
         if probability >= 0.5:
             return {
@@ -49,3 +49,24 @@ def get_result(text:str):
             }
     except Exception as e:
         print(e)        
+
+
+weights1 = np.load("weights1.npy")
+bias1 = np.load("bias1.npy")
+print(bias1[0])
+
+
+@app.post("/classify-text")
+def get_result(text:str):
+    try:
+        embedding = model.encode([text])[0]
+        z = embedding @ weights + bias
+        probability = softmax(z)
+        print(probability)
+    except Exception as e:
+        print(e)        
+
+
+
+
+
