@@ -60,7 +60,8 @@ for epoch in range(epochs):
     z = X @ weights + bias
     predictions = softmax(z)
     error = predictions.copy()
-    error[np.arange(len(Y)), Y] -= 1
+    for i in range(len(Y)):
+        error[i, Y[i]] -= 1
 
     dw = (X.T @ error) / len(Y)
     db = np.mean(error, axis=0)
