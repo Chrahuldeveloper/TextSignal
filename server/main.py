@@ -2,6 +2,7 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -17,6 +18,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+class TextRequest(BaseModel):
+    text: str
+
+
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
 weights = np.load("weights.npy")
@@ -28,11 +33,12 @@ def sigmoid(z):
 
 def softmax(z):
     exp_scores = np.exp(z)
-    return exp_scores / np.sum(exp_scores,axis=1,keepDim=True)
+    return exp_scores / np.sum(exp_scores)
 
 @app.post("/check-text")
-def get_result(text:str):
+def get_result(request: TextRequest):
     try:
+        text = request.text
         embedding = model.encode([text])[0]
         z = embedding @ weights + bias
         probability = sigmoid(z)
@@ -55,14 +61,17 @@ weights1 = np.load("weights1.npy")
 bias1 = np.load("bias1.npy")
 print(bias1[0])
 
-
 @app.post("/classify-text")
-def get_result(text:str):
+def get_result(request: TextRequest):
     try:
+        text = request.text
         embedding = model.encode([text])[0]
         z = embedding @ weights + bias
         probability = softmax(z)
         print(probability)
+        return{
+            "probability" :probability 
+        }
     except Exception as e:
         print(e)        
 
